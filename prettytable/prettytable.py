@@ -20,6 +20,7 @@ HEADER = 3
 DEFAULT = 10
 MSWORD_FRIENDLY = 11
 PLAIN_COLUMNS = 12
+BOX_CHARS = 13
 RANDOM = 20
 
 _re = re.compile("\033\[[0-9;]*m")
@@ -88,6 +89,11 @@ class PrettyTable(object):
             "int_format float_format min_table_width max_table_width padding_width left_padding_width right_padding_width".split())
         self._options.extend(
             "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice".split())
+        self._options.extend(
+            "border_vertical_char border_horizontal_char border_upper_left_char border_upper_right_char".split())
+        self._options.extend(
+            "border_lower_left_char border_lower_right_char border_left_junction_char border_right_junction_char".split())
+        self._options.extend("border_lower_junction_char border_upper_junction_char inner_upper_junction_char".split())
         self._options.extend("align valign max_width min_width".split())
         for option in self._options:
             if option in kwargs:
@@ -255,7 +261,11 @@ class PrettyTable(object):
             self._validate_int_format(option, val)
         elif option in ("float_format"):
             self._validate_float_format(option, val)
-        elif option in ("vertical_char", "horizontal_char", "junction_char"):
+        elif option in ("vertical_char", "horizontal_char", "junction_char", "border_vertical_char",
+                        "border_horizontal_char", "border_upper_left_char", "border_upper_right_char",
+                        "border_lower_left_char", "border_lower_right_char", "border_left_junction_char",
+                        "border_right_junction_char", "border_lower_junction_char", "border_upper_junction_char",
+                        "inner_upper_junction_char"):
             self._validate_single_char(option, val)
         elif option in ("attributes"):
             self._validate_attributes(option, val)
@@ -755,7 +765,7 @@ class PrettyTable(object):
 
     @property
     def vertical_char(self):
-        """The charcter used when printing table borders to draw vertical lines
+        """The character used when printing table borders to draw vertical lines
 
         Arguments:
 
@@ -770,7 +780,7 @@ class PrettyTable(object):
 
     @property
     def horizontal_char(self):
-        """The charcter used when printing table borders to draw horizontal lines
+        """The character used when printing table borders to draw horizontal lines
 
         Arguments:
 
@@ -785,7 +795,7 @@ class PrettyTable(object):
 
     @property
     def junction_char(self):
-        """The charcter used when printing table borders to draw line junctions
+        """The character used when printing table borders to draw line junctions
 
         Arguments:
 
@@ -797,6 +807,204 @@ class PrettyTable(object):
         val = self._unicode(val)
         self._validate_option("vertical_char", val)
         self._junction_char = val
+
+    @property
+    def border_vertical_char(self):
+        """The character used when printing table borders to draw vertical lines
+
+        Arguments:
+
+        border_vertical_char - single character string used to vertical borders"""
+        try:
+            return self._border_vertical_char
+        except AttributeError:
+            return self.vertical_char
+
+    @border_vertical_char.setter
+    def border_vertical_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_vertical_char", val)
+        self._border_vertical_char = val
+
+    @property
+    def border_horizontal_char(self):
+        """The character used when printing table borders to draw horizontal lines
+
+        Arguments:
+
+        border_horizontal_char - single character string used to draw horizontal borders"""
+        try:
+            return self._border_horizontal_char
+        except AttributeError:
+            return self.horizontal_char
+
+    @border_horizontal_char.setter
+    def border_horizontal_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_horizontal_char", val)
+        self._border_horizontal_char = val
+
+    @property
+    def border_upper_left_char(self):
+        """The character used when printing table borders to draw the upper left corner
+
+        Arguments:
+
+        border_upper_left_char - single character string used to draw the upper left corner of a border"""
+        try:
+            return self._border_upper_left_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_upper_left_char.setter
+    def border_upper_left_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_upper_left_char", val)
+        self._border_upper_left_char = val
+
+    @property
+    def border_upper_right_char(self):
+        """The character used when printing table borders to draw the upper right corner
+
+        Arguments:
+
+        border_upper_right_char - single character string used to draw the upper right corner of a border"""
+        try:
+            return self._border_upper_right_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_upper_right_char.setter
+    def border_upper_right_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_upper_right_char", val)
+        self._border_upper_right_char = val
+
+    @property
+    def border_lower_left_char(self):
+        """The character used when printing table borders to draw the lower left corner
+
+        Arguments:
+
+        border_lower_left_char - single character string used to draw the lower left corner of a border"""
+        try:
+            return self._border_lower_left_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_lower_left_char.setter
+    def border_lower_left_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_lower_left_char", val)
+        self._border_lower_left_char = val
+
+    @property
+    def border_lower_right_char(self):
+        """The character used when printing table borders to draw the lower right corner
+
+        Arguments:
+
+        border_lower_right_char - single character string used to draw the lower right corner of a border"""
+        try:
+            return self._border_lower_right_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_lower_right_char.setter
+    def border_lower_right_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_lower_right_char", val)
+        self._border_lower_right_char = val
+
+    @property
+    def border_left_junction_char(self):
+        """The character used when printing table borders to draw left junctions with the border
+
+        Arguments:
+
+        border_left_junction_char - single character string used to draw junctions with the left border"""
+        try:
+            return self._border_left_junction_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_left_junction_char.setter
+    def border_left_junction_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_left_junction_char", val)
+        self._border_left_junction_char = val
+
+    @property
+    def border_right_junction_char(self):
+        """The character used when printing table borders to draw right junctions with the border
+
+        Arguments:
+
+        border_right_junction_char - single character string used to draw junctions with the right border"""
+        try:
+            return self._border_right_junction_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_right_junction_char.setter
+    def border_right_junction_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_right_junction_char", val)
+        self._border_right_junction_char = val
+
+    @property
+    def border_lower_junction_char(self):
+        """The character used when printing table borders to draw lower junctions with the border
+
+        Arguments:
+
+        border_lower_junction_char - single character string used to draw junctions with the bottom border"""
+        try:
+            return self._border_lower_junction_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_lower_junction_char.setter
+    def border_lower_junction_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_lower_junction_char", val)
+        self._border_lower_junction_char = val
+
+    @property
+    def border_upper_junction_char(self):
+        """The character used when printing table borders to draw upper junctions with the border
+
+        Arguments:
+
+        border_upper_junction_char - single character string used to draw junctions with the top border"""
+        try:
+            return self._border_upper_junction_char
+        except AttributeError:
+            return self.junction_char
+
+    @border_upper_junction_char.setter
+    def border_upper_junction_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("border_upper_junction_char", val)
+        self._border_upper_junction_char = val
+
+    @property
+    def inner_upper_junction_char(self):
+        """The character used when printing table borders to draw junctions below the title
+
+        Arguments:
+
+        inner_upper_junction_char - single character string used to draw junctions below the title"""
+        try:
+            return self._inner_upper_junction_char
+        except AttributeError:
+            return self.junction_char
+
+    @inner_upper_junction_char.setter
+    def inner_upper_junction_char(self, val):
+        val = self._unicode(val)
+        self._validate_option("inner_upper_junction_char", val)
+        self._inner_upper_junction_char = val
 
     @property
     def format(self):
@@ -862,7 +1070,10 @@ class PrettyTable(object):
                 self._validate_option(option, kwargs[option])
                 options[option] = kwargs[option]
             else:
-                options[option] = getattr(self, "_" + option)
+                try:
+                    options[option] = getattr(self, "_" + option)
+                except AttributeError:
+                    options[option] = getattr(self, option)
         return options
 
     ##############################
@@ -877,6 +1088,8 @@ class PrettyTable(object):
             self._set_msword_style()
         elif style == PLAIN_COLUMNS:
             self._set_columns_style()
+        elif style == BOX_CHARS:
+            self._set_boxchar_style()
         elif style == RANDOM:
             self._set_random_style()
         else:
@@ -912,6 +1125,30 @@ class PrettyTable(object):
         self.padding_width = 1
         self.left_padding_width = 0
         self.right_padding_width = 8
+
+    def _set_boxchar_style(self):
+
+        self.header = True
+        self.border = True
+        self._hrules = FRAME
+        self._vrules = ALL
+        self.padding_width = 1
+        self.left_padding_width = 1
+        self.right_padding_width = 1
+        self.vertical_char = "│"
+        self.horizontal_char = "─"
+        self.junction_char = "┼"
+        self.border_vertical_char = "║"
+        self.border_horizontal_char = "═"
+        self.border_upper_left_char = "╔"
+        self.border_upper_right_char = "╗"
+        self.border_lower_left_char = "╚"
+        self.border_lower_right_char = "╝"
+        self.border_left_junction_char = "╟"
+        self.border_right_junction_char = "╢"
+        self.border_lower_junction_char = "╧"
+        self.border_upper_junction_char = "╤"
+        self.inner_upper_junction_char = "┬"
 
     def _set_random_style(self):
 
@@ -1207,7 +1444,7 @@ class PrettyTable(object):
 
         # Add bottom of border
         if options["border"] and options["hrules"] == FRAME:
-            lines.append(self._hrule)
+            lines.append(self._stringify_bottom_hrule(options))
 
         return self._unicode("\n").join(lines)
 
@@ -1217,7 +1454,7 @@ class PrettyTable(object):
             return ""
         lpad, rpad = self._get_padding_widths(options)
         if options['vrules'] in (ALL, FRAME):
-            bits = [options["junction_char"]]
+            bits = [options["border_left_junction_char"]]
         else:
             bits = [options["horizontal_char"]]
         # For tables with no data or fieldnames
@@ -1232,9 +1469,113 @@ class PrettyTable(object):
                 bits.append(options["junction_char"])
             else:
                 bits.append(options["horizontal_char"])
-        if options["vrules"] == FRAME:
+        if options["vrules"] in (ALL, FRAME):
             bits.pop()
-            bits.append(options["junction_char"])
+            bits.append(options["border_right_junction_char"])
+        return "".join(bits)
+
+    def _stringify_title_top_hrule(self, options):
+
+        if not options["border"]:
+            return ""
+        lpad, rpad = self._get_padding_widths(options)
+        if options['vrules'] in (ALL, FRAME):
+            bits = [options["border_upper_left_char"]]
+        else:
+            bits = [options["border_horizontal_char"]]
+        # For tables with no data or fieldnames
+        if not self._field_names:
+            bits.append(options["border_upper_right_char"])
+            return "".join(bits)
+        for field, width in zip(self._field_names, self._widths):
+            if options["fields"] and field not in options["fields"]:
+                continue
+            bits.append((width + lpad + rpad) * options["border_horizontal_char"])
+            if options['vrules'] == ALL:
+                bits.append(options["junction_char"])
+            else:
+                bits.append(options["border_horizontal_char"])
+        if options["vrules"] in (ALL, FRAME):
+            bits.pop()
+            bits.append(options["border_upper_right_char"])
+        return "".join(bits)
+
+    def _stringify_header_top_hrule(self, options):
+
+        if not options["border"]:
+            return ""
+        lpad, rpad = self._get_padding_widths(options)
+        if options['vrules'] in (ALL, FRAME):
+            bits = [options["border_left_junction_char"]]
+        else:
+            bits = [options["border_horizontal_char"]]
+        # For tables with no data or fieldnames
+        if not self._field_names:
+            bits.append(options["border_right_junction_char"])
+            return "".join(bits)
+        for field, width in zip(self._field_names, self._widths):
+            if options["fields"] and field not in options["fields"]:
+                continue
+            bits.append((width + lpad + rpad) * options["horizontal_char"])
+            if options['vrules'] == ALL:
+                bits.append(options["inner_upper_junction_char"])
+            else:
+                bits.append(options["horizontal_char"])
+        if options["vrules"] in (ALL, FRAME):
+            bits.pop()
+            bits.append(options["border_right_junction_char"])
+        return "".join(bits)
+
+    def _stringify_top_hrule(self, options):
+
+        if not options["border"]:
+            return ""
+        lpad, rpad = self._get_padding_widths(options)
+        if options['vrules'] in (ALL, FRAME):
+            bits = [options["border_upper_left_char"]]
+        else:
+            bits = [options["border_horizontal_char"]]
+        # For tables with no data or fieldnames
+        if not self._field_names:
+            bits.append(options["border_upper_right_char"])
+            return "".join(bits)
+        for field, width in zip(self._field_names, self._widths):
+            if options["fields"] and field not in options["fields"]:
+                continue
+            bits.append((width + lpad + rpad) * options["border_horizontal_char"])
+            if options['vrules'] == ALL:
+                bits.append(options["border_upper_junction_char"])
+            else:
+                bits.append(options["border_horizontal_char"])
+        if options["vrules"] in (ALL, FRAME):
+            bits.pop()
+            bits.append(options["border_upper_right_char"])
+        return "".join(bits)
+
+    def _stringify_bottom_hrule(self, options):
+
+        if not options["border"]:
+            return ""
+        lpad, rpad = self._get_padding_widths(options)
+        if options['vrules'] in (ALL, FRAME):
+            bits = [options["border_lower_left_char"]]
+        else:
+            bits = [options["border_horizontal_char"]]
+        # For tables with no data or fieldnames
+        if not self._field_names:
+            bits.append(options["border_lower_right_char"])
+            return "".join(bits)
+        for field, width in zip(self._field_names, self._widths):
+            if options["fields"] and field not in options["fields"]:
+                continue
+            bits.append((width + lpad + rpad) * options["border_horizontal_char"])
+            if options['vrules'] == ALL:
+                bits.append(options["border_lower_junction_char"])
+            else:
+                bits.append(options["border_horizontal_char"])
+        if options["vrules"] in (ALL, FRAME):
+            bits.pop()
+            bits.append(options["border_lower_right_char"])
         return "".join(bits)
 
     def _stringify_title(self, title, options):
@@ -1244,12 +1585,12 @@ class PrettyTable(object):
         if options["border"]:
             if options["vrules"] == ALL:
                 options["vrules"] = FRAME
-                lines.append(self._stringify_hrule(options))
+                lines.append(self._stringify_title_top_hrule(options))
                 options["vrules"] = ALL
             elif options["vrules"] == FRAME:
-                lines.append(self._stringify_hrule(options))
+                lines.append(self._stringify_title_top_hrule(options))
         bits = []
-        endpoint = options["vertical_char"] if options["vrules"] in (ALL, FRAME) else " "
+        endpoint = options["border_vertical_char"] if options["vrules"] in (ALL, FRAME) else " "
         bits.append(endpoint)
         title = " " * lpad + title + " " * rpad
         bits.append(self._justify(title, len(self._hrule) - 2, "c"))
@@ -1263,10 +1604,13 @@ class PrettyTable(object):
         lpad, rpad = self._get_padding_widths(options)
         if options["border"]:
             if options["hrules"] in (ALL, FRAME):
-                bits.append(self._hrule)
+                if options['title']:
+                    bits.append(self._stringify_header_top_hrule(options))
+                else:
+                    bits.append(self._stringify_top_hrule(options))
                 bits.append("\n")
             if options["vrules"] in (ALL, FRAME):
-                bits.append(options["vertical_char"])
+                bits.append(options["border_vertical_char"])
             else:
                 bits.append(" ")
         # For tables with no data or field names
@@ -1296,9 +1640,9 @@ class PrettyTable(object):
                     bits.append(" ")
         # If vrules is FRAME, then we just appended a space at the end
         # of the last field, when we really want a vertical character
-        if options["border"] and options["vrules"] == FRAME:
+        if options["border"] and options["vrules"] in (ALL, FRAME):
             bits.pop()
-            bits.append(options["vertical_char"])
+            bits.append(options["border_vertical_char"])
         if options["border"] and options["hrules"] != NONE:
             bits.append("\n")
             bits.append(self._hrule)
@@ -1330,7 +1674,7 @@ class PrettyTable(object):
             bits.append([])
             if options["border"]:
                 if options["vrules"] in (ALL, FRAME):
-                    bits[y].append(self.vertical_char)
+                    bits[y].append(options["border_vertical_char"])
                 else:
                     bits[y].append(" ")
 
@@ -1355,7 +1699,7 @@ class PrettyTable(object):
                 bits[y].append(" " * lpad + self._justify(l, width, self._align[field]) + " " * rpad)
                 if options["border"]:
                     if options["vrules"] == ALL:
-                        bits[y].append(self.vertical_char)
+                        bits[y].append(options["vertical_char"])
                     else:
                         bits[y].append(" ")
                 y += 1
@@ -1363,9 +1707,9 @@ class PrettyTable(object):
         # If vrules is FRAME, then we just appended a space at the end
         # of the last field, when we really want a vertical character
         for y in range(0, row_height):
-            if options["border"] and options["vrules"] == FRAME:
+            if options["border"] and options["vrules"] in (ALL, FRAME):
                 bits[y].pop()
-                bits[y].append(options["vertical_char"])
+                bits[y].append(options["border_vertical_char"])
 
         if options["border"] and options["hrules"] == ALL:
             bits[row_height - 1].append("\n")
