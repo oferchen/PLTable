@@ -1439,11 +1439,12 @@ class PrettyTable(object):
             lines.append(self._hrule)
 
         # Add rows
-        for row in formatted_rows:
-            lines.append(self._stringify_row(row, options))
+        for row in range(0, len(formatted_rows)):
+            if row == len(formatted_rows) - 1 : lines.append(self._stringify_row(formatted_rows[row], options, True))
+            else : lines.append(self._stringify_row(formatted_rows[row], options, False))
 
         # Add bottom of border
-        if options["border"] and options["hrules"] == FRAME:
+        if options["border"] and options["hrules"] in (ALL, FRAME):
             lines.append(self._stringify_bottom_hrule(options))
 
         return self._unicode("\n").join(lines)
@@ -1648,7 +1649,7 @@ class PrettyTable(object):
             bits.append(self._hrule)
         return "".join(bits)
 
-    def _stringify_row(self, row, options):
+    def _stringify_row(self, row, options, isLastRow):
 
         for index, field, value, width, in zip(range(0, len(row)), self._field_names, row, self._widths):
             # Enforce max widths
@@ -1711,7 +1712,7 @@ class PrettyTable(object):
                 bits[y].pop()
                 bits[y].append(options["border_vertical_char"])
 
-        if options["border"] and options["hrules"] == ALL:
+        if options["border"] and not isLastRow and options["hrules"] == ALL:
             bits[row_height - 1].append("\n")
             bits[row_height - 1].append(self._hrule)
 
