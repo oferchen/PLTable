@@ -1436,12 +1436,14 @@ class PrettyTable(object):
         if options["header"]:
             lines.append(self._stringify_header(options))
         elif options["border"] and options["hrules"] in (ALL, FRAME):
-            lines.append(self._hrule)
+            lines.append(self._stringify_hrule(options, True))
 
         # Add rows
         for row in range(0, len(formatted_rows)):
-            if row == len(formatted_rows) - 1 : lines.append(self._stringify_row(formatted_rows[row], options, True))
-            else : lines.append(self._stringify_row(formatted_rows[row], options, False))
+            if row == len(formatted_rows) - 1:
+                lines.append(self._stringify_row(formatted_rows[row], options, True))
+            else:
+                lines.append(self._stringify_row(formatted_rows[row], options, False))
 
         # Add bottom of border
         if options["border"] and options["hrules"] in (ALL, FRAME):
@@ -1449,7 +1451,7 @@ class PrettyTable(object):
 
         return self._unicode("\n").join(lines)
 
-    def _stringify_hrule(self, options):
+    def _stringify_hrule(self, options, isFirstNoHeaderRow = False):
 
         if not options["border"]:
             return ""
@@ -1467,7 +1469,10 @@ class PrettyTable(object):
                 continue
             bits.append((width + lpad + rpad) * options["horizontal_char"])
             if options['vrules'] == ALL:
-                bits.append(options["junction_char"])
+                if isFirstNoHeaderRow:
+                    bits.append(options["inner_upper_junction_char"])
+                else:
+                    bits.append(options["junction_char"])
             else:
                 bits.append(options["horizontal_char"])
         if options["vrules"] in (ALL, FRAME):
