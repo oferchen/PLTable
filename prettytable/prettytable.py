@@ -1435,8 +1435,10 @@ class PrettyTable(object):
         # Add header or top of border
         if options["header"]:
             lines.append(self._stringify_header(options))
+        elif options["border"] and options["hrules"] in (ALL, FRAME) and not title:
+            lines.append(self._stringify_hrule(options, True, True))
         elif options["border"] and options["hrules"] in (ALL, FRAME):
-            lines.append(self._stringify_hrule(options, True))
+            lines.append(self._stringify_hrule(options, True, False))
 
         # Add rows
         for row in range(0, len(formatted_rows)):
@@ -1451,13 +1453,16 @@ class PrettyTable(object):
 
         return self._unicode("\n").join(lines)
 
-    def _stringify_hrule(self, options, isFirstNoHeaderRow = False):
+    def _stringify_hrule(self, options, isFirstNoHeaderRow = False, isFirstNoTitleRow = False):
 
         if not options["border"]:
             return ""
         lpad, rpad = self._get_padding_widths(options)
         if options['vrules'] in (ALL, FRAME):
-            bits = [options["border_left_junction_char"]]
+            if isFirstNoTitleRow :
+                bits = [options["border_upper_left_char"]]
+            else :
+                bits = [options["border_left_junction_char"]]
         else:
             bits = [options["horizontal_char"]]
         # For tables with no data or fieldnames
@@ -1467,7 +1472,10 @@ class PrettyTable(object):
         for field, width in zip(self._field_names, self._widths):
             if options["fields"] and field not in options["fields"]:
                 continue
-            bits.append((width + lpad + rpad) * options["horizontal_char"])
+            if isFirstNoTitleRow :
+                bits.append((width + lpad + rpad) * options["border_horizontal_char"])
+            else :
+                bits.append((width + lpad + rpad) * options["horizontal_char"])
             if options['vrules'] == ALL:
                 if isFirstNoHeaderRow:
                     bits.append(options["inner_upper_junction_char"])
@@ -1477,7 +1485,10 @@ class PrettyTable(object):
                 bits.append(options["horizontal_char"])
         if options["vrules"] in (ALL, FRAME):
             bits.pop()
-            bits.append(options["border_right_junction_char"])
+            if isFirstNoTitleRow :
+                bits.append(options["border_upper_right_char"])
+            else :
+                bits.append(options["border_right_junction_char"])
         return "".join(bits)
 
     def _stringify_title_top_hrule(self, options):
