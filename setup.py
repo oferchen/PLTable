@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='PLTable',
-    version='0.9.9.2',
+    version='1.0.0',
     license='BSD (3 clause)',
     description='Python library for easily displaying tabular data in a visually appealing ASCII table format',
     long_description=long_description,
