@@ -1,10 +1,10 @@
 """
 Table factories
 """
+
 import csv
 from .prettytable import PrettyTable
-from ._compact import py3k, HTMLParser
-
+from .compat import py3k, HTMLParser
 
 def from_csv(fp, field_names=None, **kwargs):
     fmtparams = {}

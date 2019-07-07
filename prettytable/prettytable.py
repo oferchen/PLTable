@@ -5,10 +5,9 @@ import random
 import re
 import textwrap
 import unicodedata
-from ._compact import py3k, itermap, uni_chr, escape
-from ._compact import str_types
-from ._compact import unicode_, basestring_
-
+from .compat import py3k, itermap, uni_chr, escape
+from .compat import str_types
+from .compat import unicode_, basestring_
 
 # hrule styles
 FRAME = 0
@@ -20,18 +19,16 @@ HEADER = 3
 DEFAULT = 10
 MSWORD_FRIENDLY = 11
 PLAIN_COLUMNS = 12
-BOX_CHARS = 13
+UNICODE_LINES = 13
 RANDOM = 20
 
-_re = re.compile("\033\[[0-9;]*m")
-
+_re = re.compile("\033\\[[0-9;]*m")
 
 def _get_size(text):
     lines = text.split("\n")
     height = len(lines)
     width = max([_str_block_width(line) for line in lines])
     return width, height
-
 
 class PrettyTable(object):
     def __init__(self, field_names=None, **kwargs):
@@ -88,7 +85,7 @@ class PrettyTable(object):
         self._options.extend(
             "int_format float_format min_table_width max_table_width padding_width left_padding_width right_padding_width".split())
         self._options.extend(
-            "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice".split())
+            "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice re_pattern".split())
         self._options.extend(
             "border_vertical_char border_horizontal_char border_upper_left_char border_upper_right_char".split())
         self._options.extend(
@@ -156,6 +153,7 @@ class PrettyTable(object):
             self._oldsortslice = False
         self._format = kwargs["format"] or False
         self._xhtml = kwargs["xhtml"] or False
+        self._re_pattern = kwargs["re_pattern"] or False
         self._attributes = kwargs["attributes"] or {}
 
     def _unicode(self, value):
@@ -1019,6 +1017,33 @@ class PrettyTable(object):
     def format(self, val):
         self._validate_option("format", val)
         self._format = val
+		
+    @property
+    def xhtml(self):
+        """Controls whether to use xHTML <br/> or HTML <br> tags
+
+        Arguments:
+
+        xhtml - True or False"""
+        return self._xhtml
+
+    @xhtml.setter
+    def xhtml(self, val):
+        self._validate_option("xhtml", val)
+        self._xhtml = val
+		
+    @property
+    def re_pattern(self):
+        """Controls whether to use a regex string replace pattern
+
+        Arguments:
+
+        re_pattern - True or False"""
+        return self._re_pattern
+
+    @re_pattern.setter
+    def re_pattern(self, val):
+        self._re_pattern = val	
 
     @property
     def print_empty(self):
@@ -1088,8 +1113,8 @@ class PrettyTable(object):
             self._set_msword_style()
         elif style == PLAIN_COLUMNS:
             self._set_columns_style()
-        elif style == BOX_CHARS:
-            self._set_boxchar_style()
+        elif style == UNICODE_LINES:
+            self._set_unicode_style()
         elif style == RANDOM:
             self._set_random_style()
         else:
@@ -1126,7 +1151,7 @@ class PrettyTable(object):
         self.left_padding_width = 0
         self.right_padding_width = 8
 
-    def _set_boxchar_style(self):
+    def _set_unicode_style(self):
 
         self.header = True
         self.border = True
@@ -1159,9 +1184,9 @@ class PrettyTable(object):
         self._vrules = random.choice((ALL, FRAME, NONE))
         self.left_padding_width = random.randint(0, 5)
         self.right_padding_width = random.randint(0, 5)
-        self.vertical_char = random.choice("~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
-        self.horizontal_char = random.choice("~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
-        self.junction_char = random.choice("~!@#$%^&*()_+|-=\{}[];':\",./;<>?")
+        self.vertical_char = random.choice("~!@#$%^&*()_+|-=\\{}[];':\",./;<>?")
+        self.horizontal_char = random.choice("~!@#$%^&*()_+|-=\\{}[];':\",./;<>?")
+        self.junction_char = random.choice("~!@#$%^&*()_+|-=\\{}[];':\",./;<>?")
 
     ##############################
     # DATA INPUT METHODS         #
@@ -1751,6 +1776,63 @@ class PrettyTable(object):
         return "\f".join(pages)
 
     ##############################
+    # JSON DICTIONARY METHODS    #
+    ##############################
+
+    def get_json_dict(self, **kwargs):
+
+        """Return dictionary representation of JSON formatted version of table in current state.
+
+        Arguments:
+
+        title - optional table title
+        start - index of first data row to include in output
+        end - index of last data row to include in output PLUS ONE (list slice style)
+        fields - names of fields (columns) to include
+        header - print a header showing field names (True or False)
+        border - print a border around the table (True or False)
+        hrules - controls printing of horizontal rules after rows.  Allowed values: ALL, FRAME, HEADER, NONE
+        vrules - controls printing of vertical rules between columns.  Allowed values: FRAME, ALL, NONE
+        int_format - controls formatting of integer data
+        float_format - controls formatting of floating point data
+        padding_width - number of spaces on either side of column data (only used if left and right paddings are None)
+        left_padding_width - number of spaces on left hand side of column data
+        right_padding_width - number of spaces on right hand side of column data
+        sortby - name of field to sort rows by
+        sort_key - sorting key function, applied to data points before sorting
+        attributes - dictionary of name/value pairs to include as HTML attributes in the <table> tag
+        re_pattern - regex pattern which can be used to escape or replace characters (i.e. ANSI)"""
+
+        options = self._get_options(kwargs)
+
+        json_dict = {}
+        temp_dict = {}
+
+        # Data
+        rows = self._get_rows(options)
+        formatted_rows = self._format_rows(rows, options)
+        for row_idx in range(len(formatted_rows)) :
+            row_header = 'Entry %0.4d' % row_idx
+            temp_dict[row_header] = {}
+            for field, datum in zip(self._field_names, formatted_rows[row_idx]):
+                if options["fields"] and field not in options["fields"]: continue
+                if not options["re_pattern"] :
+                    temp_dict[row_header][field] = datum
+                else :
+                    temp_dict[row_header][options["re_pattern"].sub('', field)] = options["re_pattern"].sub('', datum)
+					
+        # Title
+        title = options["title"] or self._title
+        if title:
+            if not options["re_pattern"] :
+                json_dict[title] = temp_dict
+            else :
+                json_dict[options["re_pattern"].sub('', title)] = temp_dict
+        else : json_dict = temp_dict
+
+        return json_dict
+
+    ##############################
     # HTML STRING METHODS        #
     ##############################
 
@@ -1806,10 +1888,7 @@ class PrettyTable(object):
         # Title
         title = options["title"] or self._title
         if title:
-            cols = len(options["fields"]) if options["fields"] else len(self.field_names)
-            lines.append("    <tr>")
-            lines.append("        <td colspan=%d>%s</td>" % (cols, title))
-            lines.append("    </tr>")
+            lines.append("    <caption>%s</caption>" % (escape(title).replace("\n", linebreak)))
 
         # Headers
         if options["header"]:
@@ -1873,10 +1952,7 @@ class PrettyTable(object):
         # Title
         title = options["title"] or self._title
         if title:
-            cols = len(options["fields"]) if options["fields"] else len(self.field_names)
-            lines.append("    <tr>")
-            lines.append("            <td colspan=%d>%s</td>" % (cols, title))
-            lines.append("    </tr>")
+            lines.append("    <caption>%s</caption>" % (escape(title).replace("\n", linebreak)))
 
         # Headers
         if options["header"]:

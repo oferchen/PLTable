@@ -1,12 +1,11 @@
 import sys
 
-
 py3k = sys.version_info[0] >= 3
 
 if py3k:
-    str_types = (str, )
     unicode_ = str
     basestring_ = str
+    str_types = (str, )
     itermap = map
     iterzip = zip
     uni_chr = chr
@@ -23,11 +22,7 @@ else:
     from HTMLParser import HTMLParser
     import StringIO
 
-HTMLParser, StringIO
-
-
 if py3k and sys.version_info[1] >= 2:
     from html import escape
 else:
     from cgi import escape
-escape
