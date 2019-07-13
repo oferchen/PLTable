@@ -12,7 +12,7 @@ Compared to PTable, PLTable:
 
 - Adds table style "UNICODE_LINES" based on Ryan James's original line drawing mode at PTable boxchar branch.
 - Adds JSON Dictionary export via "get_json_dict" method. Convert it to JSON via python's built-in json import.
-- Fixes HTML export via "get_html_strin" by adding proper table Title/Caption and valid xHTML parameter toggle.
+- Fixes HTML export via "get_html_string" by adding proper table Title/Caption and valid xHTML parameter toggle.
 
 You can find the full PrettyTable documentation at the [PTable](https://ptable.readthedocs.io/en/latest/) or [PrettyTable](https://code.google.com/archive/p/prettytable/wikis) wikis.
 
