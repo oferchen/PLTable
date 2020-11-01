@@ -3,7 +3,7 @@ Table factories
 """
 
 import csv
-from .prettytable import PrettyTable
+from .pltable import PrettyTable
 from .compat import py3k, HTMLParser
 
 def from_csv(fp, field_names=None, **kwargs):
