@@ -85,7 +85,7 @@ class PrettyTable(object):
         self._options.extend(
             "int_format float_format min_table_width max_table_width padding_width left_padding_width right_padding_width".split())
         self._options.extend(
-            "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice re_pattern".split())
+            "vertical_char horizontal_char junction_char header_style valign xhtml print_empty oldsortslice re_pattern is_field_value".split())
         self._options.extend(
             "border_vertical_char border_horizontal_char border_upper_left_char border_upper_right_char".split())
         self._options.extend(
@@ -154,6 +154,7 @@ class PrettyTable(object):
         self._format = kwargs["format"] or False
         self._xhtml = kwargs["xhtml"] or False
         self._re_pattern = kwargs["re_pattern"] or False
+        self._is_field_value = kwargs["is_field_value"] or False
         self._attributes = kwargs["attributes"] or {}
 
     def _unicode(self, value):
@@ -397,8 +398,7 @@ class PrettyTable(object):
     def field_names(self, val):
         val = [self._unicode(x) for x in val]
         self._validate_option("field_names", val)
-        if self._field_names:
-            old_names = self._field_names[:]
+        old_names = self._field_names[:] if self._field_names else []
         self._field_names = val
         if self._align and old_names:
             for old_name, new_name in zip(old_names, val):
@@ -1017,7 +1017,7 @@ class PrettyTable(object):
     def format(self, val):
         self._validate_option("format", val)
         self._format = val
-		
+
     @property
     def xhtml(self):
         """Controls whether to use xHTML <br/> or HTML <br> tags
@@ -1031,7 +1031,7 @@ class PrettyTable(object):
     def xhtml(self, val):
         self._validate_option("xhtml", val)
         self._xhtml = val
-		
+
     @property
     def re_pattern(self):
         """Controls whether to use a regex string replace pattern
@@ -1043,7 +1043,20 @@ class PrettyTable(object):
 
     @re_pattern.setter
     def re_pattern(self, val):
-        self._re_pattern = val	
+        self._re_pattern = val
+
+    @property
+    def is_field_value(self):
+        """Controls whether tables are of the dual column format "Field: Value"
+
+        Arguments:
+
+        is_field_value - True or False"""
+        return self._is_field_value
+
+    @is_field_value.setter
+    def is_field_value(self, val):
+        self._is_field_value = val
 
     @property
     def print_empty(self):
@@ -1781,7 +1794,8 @@ class PrettyTable(object):
 
     def get_json_dict(self, **kwargs):
 
-        """Return dictionary representation of JSON formatted version of table in current state.
+        """
+        Return dictionary representation of JSON formatted version of table in current state.
 
         Arguments:
 
@@ -1800,37 +1814,50 @@ class PrettyTable(object):
         right_padding_width - number of spaces on right hand side of column data
         sortby - name of field to sort rows by
         sort_key - sorting key function, applied to data points before sorting
-        attributes - dictionary of name/value pairs to include as HTML attributes in the <table> tag
-        re_pattern - regex pattern which can be used to escape or replace characters (i.e. ANSI)"""
+        re_pattern - regex pattern which can be used to escape or replace characters (e.g. ANSI)
+        is_field_value - handles tables with dual column format "Field: Value" (True or False)
+        """
 
         options = self._get_options(kwargs)
 
-        json_dict = {}
-        temp_dict = {}
+        title = options['title'] or self._title
+        regex = options['re_pattern']
+        is_field_value = options['is_field_value']
 
-        # Data
-        rows = self._get_rows(options)
-        formatted_rows = self._format_rows(rows, options)
-        for row_idx in range(len(formatted_rows)) :
-            row_header = 'Entry %0.4d' % row_idx
-            temp_dict[row_header] = {}
-            for field, datum in zip(self._field_names, formatted_rows[row_idx]):
-                if options["fields"] and field not in options["fields"]: continue
-                if not options["re_pattern"] :
-                    temp_dict[row_header][field] = datum
-                else :
-                    temp_dict[row_header][options["re_pattern"].sub('', field)] = options["re_pattern"].sub('', datum)
-					
-        # Title
-        title = options["title"] or self._title
+        rows_formatted = self._format_rows(self._get_rows(options), options)
+
+        if is_field_value:
+            rows_field_names = [row_formatted[0] for row_formatted in rows_formatted]
+
+            rows_formatted = [[row_formatted[1] for row_formatted in rows_formatted]]
+        else:
+            rows_field_names = self._field_names or [str(index) for index in range(len(rows_formatted))]
+
+        json_rows_lists = []
+
+        for row_formatted in rows_formatted:
+            json_row_dict = {}
+
+            for field_title_raw, field_value_raw in zip(rows_field_names, row_formatted):
+                field_title = regex.sub('', field_title_raw) if regex else field_title_raw
+                field_value = regex.sub('', field_value_raw) if regex else field_value_raw
+
+                if options['fields'] and field_title_raw not in options['fields']:
+                    continue
+
+                json_row_dict = {**json_row_dict, **{field_title: field_value}}
+
+            json_rows_lists.append(json_row_dict)
+
         if title:
-            if not options["re_pattern"] :
-                json_dict[title] = temp_dict
-            else :
-                json_dict[options["re_pattern"].sub('', title)] = temp_dict
-        else : json_dict = temp_dict
+            if regex:
+                json_data = {regex.sub('', title): json_rows_lists}
+            else:
+                json_data = {title: json_rows_lists}
+        else:
+            json_data = json_rows_lists
 
-        return json_dict
+        return json_data
 
     ##############################
     # HTML STRING METHODS        #
